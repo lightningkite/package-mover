@@ -60,7 +60,7 @@ fun Sequence<String>.repairKotlinLines(
     val afterImports = dropWhile { !it.trim().startsWith("import ") }
         .filter { !it.trim().startsWith("import ") }
 
-    val resultingLines = (beforeImports + repairedImports.map { "import $it" } + afterImports)
+    val resultingLines = (beforeImports + repairedImports.sorted().map { "import $it" } + afterImports)
     return resultingLines
 }
 

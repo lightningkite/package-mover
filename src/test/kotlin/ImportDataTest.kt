@@ -131,9 +131,9 @@ class ImportDataTest {
             """
                 @file:UseContextualSerialization()
                 package somepackage
-                import com.old.*
                 import com.new.*
                 import com.new.stillExists
+                import com.old.*
                 
                 fun sample() {
                 }

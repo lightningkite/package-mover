@@ -74,7 +74,7 @@ afterEvaluate {
             it.dependsOn(signingTask)
         }
     }
-    tasks.findByName("signLightningkite-kiteuiPluginMarkerMavenPublication")?.let { signingTask ->
+    tasks.findByName("signLightningkite-packagemoverPluginMarkerMavenPublication")?.let { signingTask ->
         tasks.findByName("publishPluginMavenPublicationToMavenLocal")?.dependsOn(signingTask)
         tasks.findByName("publishPluginMavenPublicationToSonatypeRepository")?.dependsOn(signingTask)
     }

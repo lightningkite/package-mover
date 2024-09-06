@@ -9,6 +9,7 @@ on:
       - version-**
   push:
     branches:
+      - main
       - master
       - development
       - version-**

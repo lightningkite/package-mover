@@ -6,7 +6,7 @@ import java.util.SortedMap
 import java.util.jar.JarFile
 
 interface PackageMoverPluginExtension {
-    var additional: String
+    var additional: String?
 }
 
 class PackageMoverPlugin : Plugin<Project> {
@@ -17,25 +17,36 @@ class PackageMoverPlugin : Plugin<Project> {
             doLast {
                 val replacements = configurations
                     .asSequence()
+                    .onEach {
+                        println("Configuration ${it.name} isCanBeResolved ${it.isCanBeResolved} isVisible ${it.isVisible} isCanBeDeclared ${it.isCanBeDeclared}")
+                    }
+                    .filter { it.isCanBeResolved && it.isCanBeDeclared }
+                    .filter { !it.name.contains("debug", true) }
+                    .filter { !it.name.contains("release", true) }
+                    .filter { !it.name.contains("android", true) }
                     .flatMap { it.files }
                     .distinct()
                     .filter { it.extension == "jar" }
                     .flatMap {
+                        println("Looking at jar $it")
                         JarFile(it).use { j ->
                             j.entries().asIterator().asSequence()
                                 .filter { it.name.startsWith("META-INF") && it.name.endsWith(".packagemove") }
                                 .flatMap {
-                                    j.getInputStream(it).reader().useLines { lines -> lines.linesToImportReplacementPairs() }
+                                    println("Got packagemove file ${it.name}")
+                                    j.getInputStream(it).reader().readLines().asSequence().linesToImportReplacementPairs().toList()
                                 }
+                                .toList()
                         }
                     }
                     .associateBy { it.from }
-                    .plus(ext.additional.toImportReplacements())
+                    .plus(ext.additional?.toImportReplacements() ?: mapOf())
                     .toSortedMap()
 
-                project.rootDir.resolve("src").walkTopDown()
+                project.projectDir.resolve("src").walkTopDown()
                     .filter { it.extension == "kt" }
                     .forEach {
+                        println("Processing $it")
                         val lines = it.readLines().asSequence()
                         val resultingLines = lines.repairKotlinLines(replacements).joinToString(System.lineSeparator())
                         it.writeText(resultingLines)
